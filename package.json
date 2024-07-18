@@ -1,0 +1,11 @@
+{
+  "name": "mac-media-control",
+  "version": "1.0.0",
+  "description": "A series of node scripts to convert .mov files to .mp4 files and also to rename and redate Apple device created media to be exported in Android and PC formats.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "warptrail",
+  "license": "ISC"
+}
