@@ -5,6 +5,9 @@ const ffmpegPath = require('ffmpeg-static');
 const exiftool = require('node-exiftool');
 const dayjs = require('dayjs');
 
+// Import helper modules
+const getFrameRate = require('./helpers/frame-rate');
+
 const ep = new exiftool.ExiftoolProcess();
 
 // Set FFmpeg path
@@ -15,6 +18,10 @@ const convertMovToMp4 = async (inputPath, outputPath) => {
   try {
     // Open Exiftool
     await ep.open();
+
+    // Get Frame rate of original .MOV file
+    const frameRate = await getFrameRate(inputPath);
+    console.log(frameRate);
 
     // Read metadata using Exiftool
     const metadata = await ep.readMetadata(inputPath, ['-j']);
@@ -65,6 +72,7 @@ const convertAllMovFiles = async (dirPath) => {
 
         try {
           await convertMovToMp4(inputPath, outputPath);
+          console.log(`Successfully converted ${file} to ${outputName}`);
         } catch (err) {
           console.error(`Failed to convert ${file}`, err);
         }

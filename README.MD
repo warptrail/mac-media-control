@@ -34,3 +34,34 @@ Our comprehensive script bundle offers two powerful tools designed to streamline
 Say goodbye to .MOV files and confusing filenames! Simplify your digital life with our script bundle and enjoy a streamlined, organized media library today.
 
 ## Get started now and take control of your photo and video management!
+
+# Read Me
+
+## Video and Image Conversion and Renaming Scripts
+
+These scripts are designed to be run on macOS only. They offer two main functionalities:
+
+1. Convert .MOV files to .MP4 for better compatibility with non-Apple devices.
+
+2. Rename image and video files based on their creation timestamp in a format similar to Android's naming convention.
+
+The scripts are designed to be run independently of each other, but they can also be used in conjunction. If you plan to use both, it is best to run the conversion script first and then the renaming script.
+
+## Requirements
+
+- macOS
+- Homebrew (https://brew.sh)
+- Node.js (https://nodejs.org/)
+- FFmpeg (https://ffmpeg.org/)
+- ExifTool (https://exiftool.org/)
+- Xcode Command Line Tools (for SetFile command)
+
+## Installation of Required Tools
+
+1. Install Node.js: Download and install from the [official Node.js website](https://nodejs.org/en/download/package-manager).
+
+2. Install FFmpeg:
+
+```
+brew install FFmpg
+```
