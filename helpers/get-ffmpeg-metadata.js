@@ -1,6 +1,6 @@
 const ffmpeg = require('fluent-ffmpeg');
 
-const getFrameRate = (inputPath) => {
+const getFfmpegMetadata = (inputPath) => {
   return new Promise((resolve, reject) => {
     ffmpeg.ffprobe(inputPath, (err, metadata) => {
       if (err) {
@@ -11,8 +11,7 @@ const getFrameRate = (inputPath) => {
         (stream) => stream.codec_type === 'video'
       );
       if (videoStream) {
-        const frameRate = eval(videoStream.r_frame_rate); // r_frame_rate is a string like "30000/1001"
-        resolve(frameRate);
+        resolve(videoStream);
       } else {
         reject(new Error('No video stream found'));
       }
@@ -20,4 +19,4 @@ const getFrameRate = (inputPath) => {
   });
 };
 
-module.exports = getFrameRate;
+module.exports = getFfmpegMetadata;

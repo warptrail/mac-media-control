@@ -6,7 +6,7 @@ const exiftool = require('node-exiftool');
 const dayjs = require('dayjs');
 
 // Import helper modules
-const getFrameRate = require('./helpers/frame-rate');
+const getFfmpegMetadata = require('./helpers/get-ffmpeg-metadata');
 
 const ep = new exiftool.ExiftoolProcess();
 
@@ -20,8 +20,13 @@ const convertMovToMp4 = async (inputPath, outputPath) => {
     await ep.open();
 
     // Get Frame rate of original .MOV file
-    const frameRate = await getFrameRate(inputPath);
-    console.log(frameRate);
+    const ffmpegMetadata = await getFfmpegMetadata(inputPath);
+    const frameRate = eval(ffmpegMetadata.avg_frame_rate);
+    const timeBase = ffmpegMetadata.time_base;
+
+    console.log('frameRate: ', frameRate);
+    console.log('timeBase: ', timeBase);
+    console.log(ffmpegMetadata);
 
     // Read metadata using Exiftool
     const metadata = await ep.readMetadata(inputPath, ['-j']);
@@ -31,8 +36,12 @@ const convertMovToMp4 = async (inputPath, outputPath) => {
     await new Promise((resolve, reject) => {
       ffmpeg(inputPath)
         .outputOptions([
-          '-map_metadata 0', // Copy metadata
           '-movflags use_metadata_tags', // Preserve metadata tags
+          '-vf setpts=PTS-STARTPTS', // Ensure constant frame rate
+          '-map_metadata 0', // Remove all metadata
+          '-movflags faststart', // Optimize for web playback
+          '-vf setpts=PTS-STARTPTS', // Ensure constant frame rate
+          '-metadata:s:v rotate=0', // Reset rotation metadata if any
         ])
         .output(outputPath)
         .on('end', resolve)
