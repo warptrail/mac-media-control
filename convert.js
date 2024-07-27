@@ -6,7 +6,7 @@ const exiftool = require('node-exiftool');
 const dayjs = require('dayjs');
 
 // Import helper modules
-const getFfmpegMetadata = require('./helpers/get-ffmpeg-metadata');
+const checkFrameRates = require('./helpers/check-frame-rate');
 
 const ep = new exiftool.ExiftoolProcess();
 
@@ -19,29 +19,26 @@ const convertMovToMp4 = async (inputPath, outputPath) => {
     // Open Exiftool
     await ep.open();
 
-    // Get Frame rate of original .MOV file
-    const ffmpegMetadata = await getFfmpegMetadata(inputPath);
-    const frameRate = eval(ffmpegMetadata.avg_frame_rate);
-    const timeBase = ffmpegMetadata.time_base;
-
-    console.log('frameRate: ', frameRate);
-    console.log('timeBase: ', timeBase);
-    console.log(ffmpegMetadata);
-
-    // Read metadata using Exiftool
+    // Read Exif metadata using Exiftool
     const metadata = await ep.readMetadata(inputPath, ['-j']);
     const originalMetadata = metadata.data[0];
+
+    // Determine Framerate
+    const frameRate = await checkFrameRates(inputPath);
 
     // convert .mov to .mp4
     await new Promise((resolve, reject) => {
       ffmpeg(inputPath)
         .outputOptions([
-          '-movflags use_metadata_tags', // Preserve metadata tags
-          '-vf setpts=PTS-STARTPTS', // Ensure constant frame rate
-          '-map_metadata 0', // Remove all metadata
-          '-movflags faststart', // Optimize for web playback
-          '-vf setpts=PTS-STARTPTS', // Ensure constant frame rate
-          '-metadata:s:v rotate=0', // Reset rotation metadata if any
+          '-c:v libx264', // Video codec
+          '-crf 18', // Quality setting (lower is better, range is 0-51)
+          '-preset slow', // Encoding speed/quality tradeoff
+          '-pix_fmt yuv420p',
+          '-movflags +faststart',
+          '-c:a aac',
+          '-b:a 192k',
+          `-r ${frameRate}`,
+          '-strict experimental',
         ])
         .output(outputPath)
         .on('end', resolve)
