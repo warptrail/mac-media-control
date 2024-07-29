@@ -14,7 +14,7 @@ const checkFrameRates = async (inputPath) => {
 
   // (This code prevents a mismatch in frame rate settings for some videos)
   // determine if we should override the frame rate
-  const frameRateThreshold = 5; // Threshold difference
+  const frameRateThreshold = 5; // Threshold difference - Adjust as needed
   let frameRateToUse = frameRate; // Default to the original framerate
 
   if (Math.abs(frameRate - avgFrameRate) > frameRateThreshold) {

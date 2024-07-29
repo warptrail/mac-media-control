@@ -15,29 +15,33 @@ const absoluteVideoPath = path.resolve(videoPath);
 
 // Function to get and display metadata
 const getVideoMetadata = (filePath) => {
-  ffmpeg.ffprobe(filePath, (err, metadata) => {
-    if (err) {
-      console.error(`Error fetching metadata: ${err}`);
-      process.exit(1);
-    }
-    const metadataJson = JSON.stringify(metadata, null, 2);
-    console.log('Metadata:', metadataJson);
-
-    // Write to new JSON file
-    const fileName = path.basename(filePath, path.extname(filePath));
-    const outputFilePath = path.join(
-      path.dirname(filePath),
-      `${fileName}_metadata.json`
-    );
-
-    fs.writeFile(outputFilePath, metadataJson, (err) => {
+  try {
+    ffmpeg.ffprobe(filePath, (err, metadata) => {
       if (err) {
-        console.error(`Error writing metadata to JSON file: ${err}`);
+        console.error(`Error fetching metadata: ${err}`);
         process.exit(1);
       }
-      console.log(`Metadata written to ${outputFilePath}`);
+      const metadataJson = JSON.stringify(metadata, null, 2);
+      console.log('Metadata:', metadataJson);
+
+      // Write to new JSON file
+      const fileName = path.basename(filePath, path.extname(filePath));
+      const outputFilePath = path.join(
+        path.dirname(filePath),
+        `${fileName}_metadata.json`
+      );
+
+      fs.writeFile(outputFilePath, metadataJson, (err) => {
+        if (err) {
+          console.error(`Error writing metadata to JSON file: ${err}`);
+          process.exit(1);
+        }
+        console.log(`Metadata written to ${outputFilePath}`);
+      });
     });
-  });
+  } catch (err) {
+    console.error(`There was an error with the probing: ${err}`);
+  }
 };
 
 // Fetch and display the metadata

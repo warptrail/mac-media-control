@@ -33,12 +33,14 @@ const convertMovToMp4 = async (inputPath, outputPath) => {
           '-c:v libx264', // Video codec
           '-crf 18', // Quality setting (lower is better, range is 0-51)
           '-preset slow', // Encoding speed/quality tradeoff
-          '-pix_fmt yuv420p',
-          '-movflags +faststart',
-          '-c:a aac',
-          '-b:a 192k',
-          `-r ${frameRate}`,
-          '-strict experimental',
+          '-map_metadata 0', // Copy all metadata
+          '-pix_fmt yuv420p', //Users/moonshade/Developer/test
+          '-movflags +faststart', // Optimize for web playback
+          '-c:a aac', // Use the AAC audio codec
+          '-b:a 192k', // Set audio bitrate
+          `-r ${frameRate}`, // Set frame rate to original or 30
+          '-vf setpts=PTS-STARTPTS', // Ensure constant frame rate
+          '-strict experimental', // Allow experimental codecs if necessary
         ])
         .output(outputPath)
         .on('end', resolve)
