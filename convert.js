@@ -2,13 +2,18 @@ const fs = require('fs');
 const path = require('path');
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('ffmpeg-static');
-const exiftool = require('node-exiftool');
 const dayjs = require('dayjs');
 
 // Import helper modules
 const checkFrameRates = require('./helpers/check-frame-rate');
-
-const ep = new exiftool.ExiftoolProcess();
+const {
+  openExifTool,
+  closeExifTool,
+  readExifData,
+  writeExifData,
+  writeGPSMetadata,
+} = require('./helpers/exiftool-helper');
+const extractGPSMetadata = require('./helpers/extract-gps-metadata');
 
 // Set FFmpeg path
 ffmpeg.setFfmpegPath(ffmpegPath);
@@ -17,11 +22,13 @@ ffmpeg.setFfmpegPath(ffmpegPath);
 const convertMovToMp4 = async (inputPath, outputPath) => {
   try {
     // Open Exiftool
-    await ep.open();
+    await openExifTool();
 
     // Read Exif metadata using Exiftool
-    const metadata = await ep.readMetadata(inputPath, ['-j']);
-    const originalMetadata = metadata.data[0];
+    const originalMetadata = await readExifData(inputPath);
+
+    // Extract GPS data
+    const gpsData = await extractGPSMetadata(originalMetadata);
 
     // Determine Framerate
     const frameRate = await checkFrameRates(inputPath);
@@ -48,11 +55,16 @@ const convertMovToMp4 = async (inputPath, outputPath) => {
         .run();
     });
 
-    // todo Prepare metadata to write back
+    // Write original metadata back to the new .mp4 file
+    // await writeExifData(outputPath, originalMetadata);
+
+    // Write reformated GPS metadata back to the new .mp4 file
+    writeGPSMetadata(outputPath, gpsData);
   } catch (err) {
     console.error(`Failed to convert ${inputPath}`, err);
   } finally {
-    await ep.close();
+    await closeExifTool();
+    console.log('wow');
   }
 };
 
