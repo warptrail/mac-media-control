@@ -45,20 +45,20 @@ const writeGPSMetadata = async (filePath, gpsData) => {
     const exifToolArgs = {};
 
     if (gpsData.GPSLatitude && gpsData.GPSLongitude) {
-      exifToolArgs['-gpslatitude'] = `-gpslatitude=${gpsData.GPSLatitude}`;
-      exifToolArgs['-gpslongitude'] = `-gpslongitude=${gpsData.GPSLongitude}`;
+      exifToolArgs.GPSLatitude = gpsData.latitude;
+      exifToolArgs.GPSLongitude = gpsData.longitude;
     }
 
     if (gpsData.GPSAltitude) {
-      exifToolArgs.GPSAltitude = `-GPSAltitude=${gpsData.GPSAltitude}`;
+      exifToolArgs.GPSAltitude = gpsData.altitude;
     }
 
     if (gpsData.GPSLatitudeRef) {
-      exifToolArgs.GPSLatitudeRef = `-GPSLatitudeRef=${gpsData.GPSLatitudeRef}`;
+      exifToolArgs.GPSLatitudeRef = gpsData.GPSLatitudeRef;
     }
 
     if (gpsData.GPSLongitudeRef) {
-      exifToolArgs.GPSLongitudeRef = `-GPSLongitudeRef=${gpsData.GPSLongitudeRef}`;
+      exifToolArgs.GPSLongitudeRef = gpsData.GPSLongitudeRef;
     }
 
     if (Object.keys(exifToolArgs).length > 0) {

@@ -20,7 +20,7 @@ const checkFrameRates = async (inputPath) => {
   if (Math.abs(frameRate - avgFrameRate) > frameRateThreshold) {
     frameRateToUse = 30; // Override to 30 fps
   }
-  console.log(frameRateToUse);
+  // console.log(frameRateToUse);
   return frameRateToUse;
 };
 

@@ -14,6 +14,7 @@ const {
   writeGPSMetadata,
 } = require('./helpers/exiftool-helper');
 const extractGPSMetadata = require('./helpers/extract-gps-metadata');
+const reformatGPSCoordinates = require('./helpers/reformat-gps-coordinates');
 
 // Set FFmpeg path
 ffmpeg.setFfmpegPath(ffmpegPath);
@@ -29,6 +30,10 @@ const convertMovToMp4 = async (inputPath, outputPath) => {
 
     // Extract GPS data
     const gpsData = await extractGPSMetadata(originalMetadata);
+
+    // Reformat GPS data
+    const reformatedGpsData = reformatGPSCoordinates(gpsData);
+    console.log(reformatedGpsData);
 
     // Determine Framerate
     const frameRate = await checkFrameRates(inputPath);
@@ -59,12 +64,11 @@ const convertMovToMp4 = async (inputPath, outputPath) => {
     // await writeExifData(outputPath, originalMetadata);
 
     // Write reformated GPS metadata back to the new .mp4 file
-    writeGPSMetadata(outputPath, gpsData);
+    writeGPSMetadata(outputPath, reformatedGpsData);
   } catch (err) {
     console.error(`Failed to convert ${inputPath}`, err);
   } finally {
     await closeExifTool();
-    console.log('wow');
   }
 };
 
@@ -102,7 +106,13 @@ const convertAllMovFiles = async (dirPath) => {
 };
 
 // Get the directory path from the command-line arguments
-const directoryPath = process.argv.slice(2).join(' ');
+const filePath = process.argv.slice(2).join(' ');
+
+// Check if file path is provided
+if (!filePath) {
+  console.error('Please provide a file path as an argument.');
+  process.exit(1);
+}
 
 // Run the conversion process
-convertAllMovFiles(directoryPath);
+convertAllMovFiles(filePath);

@@ -7,8 +7,11 @@ const extractGPSMetadata = (metadata) => {
     GPSLongitudeRef: metadata.GPSLongitudeRef,
     GPSAltitudeRef: metadata.GPSAltitudeRef,
     LocationAccuracyHorizontal: metadata.LocationAccuracyHorizontal,
+    GPSPosition: metadata.GPSPosition,
+    GPSCoordinates: metadata.GPSCoordinates,
   };
 
+  console.table(gpsData);
   return gpsData;
 };
 
