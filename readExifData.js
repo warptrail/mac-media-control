@@ -8,7 +8,7 @@ const getMetaData = async (filePath) => {
   try {
     await ep.open();
 
-    const metadata = await ep.readMetadata(filePath, ['-j']);
+    const metadata = await ep.readMetadata(filePath, ['-File:all']);
     const metadataJson = metadata.data[0];
 
     // Create the JSON file path

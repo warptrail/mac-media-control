@@ -33,7 +33,7 @@ const reformatGPSCoordinates = (gpsData) => {
       6
     )}+${altitude.toFixed(3)}/`;
 
-    return { latitude, longitude, altitude };
+    return { latitude, longitude, altitude, formattedGPSPosition };
   } else {
     return null;
   }

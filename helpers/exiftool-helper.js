@@ -42,27 +42,29 @@ const writeExifData = async (filePath, metadata) => {
 
 const writeGPSMetadata = async (filePath, gpsData) => {
   try {
-    const exifToolArgs = {};
+    const { latitude, longitude, altitude, formattedGPSPosition } = gpsData;
+    const exifMetadata = {
+      'EXIF:GPSLatitude': latitude,
+      'EXIF:GPSLongitude': longitude,
+      'EXIF:GPSAltitude': altitude,
+      'Keys:GPSCoordinates': formattedGPSPosition,
+    };
 
-    if (gpsData.GPSLatitude && gpsData.GPSLongitude) {
-      exifToolArgs.GPSLatitude = gpsData.latitude;
-      exifToolArgs.GPSLongitude = gpsData.longitude;
-    }
+    if (Object.keys(exifMetadata).length > 0) {
+      // await ep.writeMetadata(filePath, exifToolArgs, ['overwrite_original']);
 
-    if (gpsData.GPSAltitude) {
-      exifToolArgs.GPSAltitude = gpsData.altitude;
-    }
-
-    if (gpsData.GPSLatitudeRef) {
-      exifToolArgs.GPSLatitudeRef = gpsData.GPSLatitudeRef;
-    }
-
-    if (gpsData.GPSLongitudeRef) {
-      exifToolArgs.GPSLongitudeRef = gpsData.GPSLongitudeRef;
-    }
-
-    if (Object.keys(exifToolArgs).length > 0) {
-      await ep.writeMetadata(filePath, exifToolArgs, ['overwrite_original']);
+      // Also set macOS specific tags if necessary
+      /*
+      await ep.writeMetadata(
+        filePath,
+        {
+          kMDItemLatitude: gpsData.GPSLatitude,
+          kMDItemLongitude: gpsData.GPSLongitude,
+        },
+        ['overwrite_original']
+      );
+      */
+      await ep.writeMetadata(filePath, exifMetadata, ['overwrite_original']);
       console.log(`Successfully wrote geolocation metadata to ${filePath}`);
     }
   } catch (err) {
