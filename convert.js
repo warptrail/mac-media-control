@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
+const { exec } = require('child_process');
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('ffmpeg-static');
-const dayjs = require('dayjs');
 
 // Import helper modules
 const checkFrameRates = require('./helpers/check-frame-rate');
@@ -11,10 +11,11 @@ const {
   closeExifTool,
   readExifData,
   writeExifData,
-  writeGPSMetadata,
 } = require('./helpers/exiftool-helper');
 const extractGPSMetadata = require('./helpers/extract-gps-metadata');
 const reformatGPSCoordinates = require('./helpers/reformat-gps-coordinates');
+const extractCreateDate = require('./helpers/extract-create-date');
+const changeFsUtimes = require('./helpers/fs-utimes-creation-date');
 
 // Set FFmpeg path
 ffmpeg.setFfmpegPath(ffmpegPath);
@@ -29,7 +30,10 @@ const convertMovToMp4 = async (inputPath, outputPath) => {
     const originalMetadata = await readExifData(inputPath);
 
     // Extract GPS data
-    const gpsData = await extractGPSMetadata(originalMetadata);
+    const gpsData = extractGPSMetadata(originalMetadata);
+
+    // Extract file create date in UTC
+    const createDate = extractCreateDate(originalMetadata);
 
     // Reformat GPS data
     const reformatedGpsData = reformatGPSCoordinates(gpsData);
@@ -60,11 +64,11 @@ const convertMovToMp4 = async (inputPath, outputPath) => {
         .run();
     });
 
-    // Write original metadata back to the new .mp4 file
-    // await writeExifData(outputPath, originalMetadata);
+    //  Write reformated GPS and date-time metadata back to the new .mp4 file
+    await writeExifData(outputPath, reformatedGpsData, createDate);
 
-    // Write reformated GPS metadata back to the new .mp4 file
-    writeGPSMetadata(outputPath, reformatedGpsData);
+    // Change the file system utimes
+    changeFsUtimes(outputPath, createDate);
   } catch (err) {
     console.error(`Failed to convert ${inputPath}`, err);
   } finally {
@@ -106,13 +110,73 @@ const convertAllMovFiles = async (dirPath) => {
 };
 
 // Get the directory path from the command-line arguments
-const filePath = process.argv.slice(2).join(' ');
+const dirPath = process.argv.slice(2).join(' ');
 
 // Check if file path is provided
-if (!filePath) {
-  console.error('Please provide a file path as an argument.');
+if (!dirPath) {
+  console.error('Please provide a directory path as an argument.');
   process.exit(1);
 }
 
+// ! TEST SCRIPTS
+const testDate = async (inputPath) => {
+  try {
+    // Open Exiftool
+    await openExifTool();
+
+    // Read Exif metadata using Exiftool
+    const originalMetadata = await readExifData(inputPath);
+
+    // Extract file create date in UTC
+    const createDateObj = extractCreateDate(originalMetadata); // Object with original string and JS Date Object
+
+    console.log(createDateObj);
+
+    // Change the file system modification dates
+    changeFsUtimes(inputPath, createDateObj.createDate);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    await closeExifTool();
+  }
+};
+
+// Test all script
+const testFsTimesAll = async (dirPath) => {
+  fs.readdir(dirPath, async (err, files) => {
+    if (err) {
+      console.error('Error reading directory:', err);
+      return;
+    }
+
+    for (const file of files) {
+      // Skip hidden files
+      if (file.startsWith('.')) {
+        console.log(`Skipping hidden file: ${file}`);
+        continue;
+      }
+
+      // target the .mov files
+      const ext = path.extname(file);
+      if (ext === '.mp4' || ext === '.MP4') {
+        const inputPath = path.join(dirPath, file);
+        console.log(inputPath);
+
+        try {
+          // ! Do Stuff here
+          await testDate(inputPath);
+        } catch (err) {
+          console.error(`Failed to test ${file}`, err);
+        }
+      }
+    }
+  });
+};
+
+const fatBoySlimString = '2024:05:25 06:55:07';
+
+// console.log('The Funks old brother', fatBoySlimDate);
+
 // Run the conversion process
-convertAllMovFiles(filePath);
+// convertAllMovFiles(filePath);
+testFsTimesAll(dirPath);

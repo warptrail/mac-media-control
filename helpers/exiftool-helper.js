@@ -31,19 +31,14 @@ const readExifData = async (filePath) => {
 };
 
 // Function to write Exif metadata
-const writeExifData = async (filePath, metadata) => {
-  try {
-    await ep.writeMetadata(filePath, metadata, ['overwrite_original']);
-  } catch (err) {
-    console.error(`Failed to write metadata to ${filePath}:`, err);
-    throw err;
-  }
-};
-
-const writeGPSMetadata = async (filePath, gpsData) => {
+const writeExifData = async (filePath, gpsData, createDate) => {
   try {
     const { latitude, longitude, altitude, formattedGPSPosition } = gpsData;
     const exifMetadata = {
+      'EXIF:DateTimeOriginal': createDate,
+      'EXIF:CreateDate': createDate,
+      'EXIF:ModifyDate': createDate,
+      'EXIF:GPSLatitude': latitude,
       'EXIF:GPSLatitude': latitude,
       'EXIF:GPSLongitude': longitude,
       'EXIF:GPSAltitude': altitude,
@@ -51,19 +46,6 @@ const writeGPSMetadata = async (filePath, gpsData) => {
     };
 
     if (Object.keys(exifMetadata).length > 0) {
-      // await ep.writeMetadata(filePath, exifToolArgs, ['overwrite_original']);
-
-      // Also set macOS specific tags if necessary
-      /*
-      await ep.writeMetadata(
-        filePath,
-        {
-          kMDItemLatitude: gpsData.GPSLatitude,
-          kMDItemLongitude: gpsData.GPSLongitude,
-        },
-        ['overwrite_original']
-      );
-      */
       await ep.writeMetadata(filePath, exifMetadata, ['overwrite_original']);
       console.log(`Successfully wrote geolocation metadata to ${filePath}`);
     }
@@ -77,5 +59,4 @@ module.exports = {
   closeExifTool,
   readExifData,
   writeExifData,
-  writeGPSMetadata,
 };
