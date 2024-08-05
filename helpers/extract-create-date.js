@@ -10,7 +10,7 @@ dayjs.extend(timezone);
 const extractCreateDate = (metaData) => {
   try {
     const createDateExifStr = metaData.CreateDate;
-
+    console.log('original exif CreateDate:', metaData.CreateDate);
     // Parse the CreateDateExifStr variable using Dayjs and adjust for UTC offset
 
     const createDateUTC = dayjs.utc(createDateExifStr, 'YYYY:MM:DD HH:mm:ss');

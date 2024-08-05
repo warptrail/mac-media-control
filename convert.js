@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const { exec } = require('child_process');
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('ffmpeg-static');
 
@@ -16,6 +15,7 @@ const extractGPSMetadata = require('./helpers/extract-gps-metadata');
 const reformatGPSCoordinates = require('./helpers/reformat-gps-coordinates');
 const extractCreateDate = require('./helpers/extract-create-date');
 const changeFsUtimes = require('./helpers/fs-utimes-creation-date');
+const runExecSetFileCreateDate = require('./helpers/set-file-create-date');
 
 // Set FFmpeg path
 ffmpeg.setFfmpegPath(ffmpegPath);
@@ -33,7 +33,7 @@ const convertMovToMp4 = async (inputPath, outputPath) => {
     const gpsData = extractGPSMetadata(originalMetadata);
 
     // Extract file create date in UTC
-    const createDate = extractCreateDate(originalMetadata);
+    const createDateObj = extractCreateDate(originalMetadata); // Object with original string and JS Date Object
 
     // Reformat GPS data
     const reformatedGpsData = reformatGPSCoordinates(gpsData);
@@ -65,10 +65,17 @@ const convertMovToMp4 = async (inputPath, outputPath) => {
     });
 
     //  Write reformated GPS and date-time metadata back to the new .mp4 file
-    await writeExifData(outputPath, reformatedGpsData, createDate);
+    await writeExifData(
+      outputPath,
+      reformatedGpsData,
+      createDateObj.createDateExifStr
+    );
 
-    // Change the file system utimes
-    changeFsUtimes(outputPath, createDate);
+    // Change the file system modification dates on the new .mp4 file
+    changeFsUtimes(outputPath, createDateObj.createDate);
+
+    // Change the create date with SetFile
+    runExecSetFileCreateDate(outputPath, createDateObj.createDate);
   } catch (err) {
     console.error(`Failed to convert ${inputPath}`, err);
   } finally {
@@ -130,8 +137,6 @@ const testDate = async (inputPath) => {
     // Extract file create date in UTC
     const createDateObj = extractCreateDate(originalMetadata); // Object with original string and JS Date Object
 
-    console.log(createDateObj);
-
     // Change the file system modification dates
     changeFsUtimes(inputPath, createDateObj.createDate);
   } catch (err) {
@@ -178,5 +183,5 @@ const fatBoySlimString = '2024:05:25 06:55:07';
 // console.log('The Funks old brother', fatBoySlimDate);
 
 // Run the conversion process
-// convertAllMovFiles(filePath);
-testFsTimesAll(dirPath);
+convertAllMovFiles(dirPath);
+// testFsTimesAll(dirPath);
