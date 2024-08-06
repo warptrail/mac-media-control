@@ -33,21 +33,29 @@ const readExifData = async (filePath) => {
 // Function to write Exif metadata
 const writeExifData = async (filePath, gpsData, createDate) => {
   try {
-    const { latitude, longitude, altitude, formattedGPSPosition } = gpsData;
     const exifMetadata = {
       'EXIF:DateTimeOriginal': createDate,
       'EXIF:CreateDate': createDate,
       'EXIF:ModifyDate': createDate,
-      'EXIF:GPSLatitude': latitude,
-      'EXIF:GPSLatitude': latitude,
-      'EXIF:GPSLongitude': longitude,
-      'EXIF:GPSAltitude': altitude,
-      'Keys:GPSCoordinates': formattedGPSPosition,
     };
+
+    // If gpsData is available, add geographical data to exifMetadata
+    if (gpsData) {
+      const { latitude, longitude, altitude, formattedGPSPosition } = gpsData;
+
+      exifMetadata['EXIF:GPSLatitude'] = latitude;
+      exifMetadata['EXIF:GPSLongitude'] = longitude;
+      exifMetadata['EXIF:GPSAltitude'] = altitude;
+      exifMetadata['Keys:GPSCoordinates'] = formattedGPSPosition;
+    }
 
     if (Object.keys(exifMetadata).length > 0) {
       await ep.writeMetadata(filePath, exifMetadata, ['overwrite_original']);
-      console.log(`Successfully wrote geolocation metadata to ${filePath}`);
+      console.log(
+        `Successfully wrote ${
+          gpsData ? 'date/time & geolocation' : 'date/time'
+        } metadata to ${filePath}`
+      );
     }
   } catch (err) {
     console.error('Error writing GPS metadata:', err);

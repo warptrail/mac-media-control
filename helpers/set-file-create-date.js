@@ -1,14 +1,16 @@
 const { exec } = require('child_process');
+const util = require('util');
+const execPromise = util.promisify(exec);
 const dayjs = require('dayjs');
 
 const formatDateForSetFile = (date) => {
   return dayjs(date).format('MM/DD/YYYY HH:mm:ss');
 };
 
-const runExecSetFileCreateDate = (outputPath, date) => {
+const runExecSetFileCreateDate = async (outputPath, date) => {
   const formattedDate = formatDateForSetFile(date);
-  console.log('formattedDate for setFile:', formattedDate);
-  exec(
+
+  execPromise(
     `SetFile -d "${formattedDate}" "${outputPath}"`,
     (error, stdout, stderr) => {
       if (error) {
@@ -19,6 +21,7 @@ const runExecSetFileCreateDate = (outputPath, date) => {
         console.error(`Error: ${stderr}`);
         return;
       }
+      console.log('formattedDate for setFile:', formattedDate);
       console.log(`Successfully set creation date for ${outputPath}`);
     }
   );

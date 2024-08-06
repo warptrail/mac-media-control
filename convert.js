@@ -37,7 +37,7 @@ const convertMovToMp4 = async (inputPath, outputPath) => {
 
     // Reformat GPS data
     const reformatedGpsData = reformatGPSCoordinates(gpsData);
-    console.log(reformatedGpsData);
+    console.table(reformatedGpsData);
 
     // Determine Framerate
     const frameRate = await checkFrameRates(inputPath);
@@ -72,10 +72,12 @@ const convertMovToMp4 = async (inputPath, outputPath) => {
     );
 
     // Change the file system modification dates on the new .mp4 file
-    changeFsUtimes(outputPath, createDateObj.createDate);
+    await new Promise((resolve, reject) => {
+      changeFsUtimes(outputPath, createDateObj.createDate, resolve, reject);
+    });
 
     // Change the create date with SetFile
-    runExecSetFileCreateDate(outputPath, createDateObj.createDate);
+    await runExecSetFileCreateDate(outputPath, createDateObj.createDate);
   } catch (err) {
     console.error(`Failed to convert ${inputPath}`, err);
   } finally {
@@ -125,63 +127,4 @@ if (!dirPath) {
   process.exit(1);
 }
 
-// ! TEST SCRIPTS
-const testDate = async (inputPath) => {
-  try {
-    // Open Exiftool
-    await openExifTool();
-
-    // Read Exif metadata using Exiftool
-    const originalMetadata = await readExifData(inputPath);
-
-    // Extract file create date in UTC
-    const createDateObj = extractCreateDate(originalMetadata); // Object with original string and JS Date Object
-
-    // Change the file system modification dates
-    changeFsUtimes(inputPath, createDateObj.createDate);
-  } catch (err) {
-    console.error(err);
-  } finally {
-    await closeExifTool();
-  }
-};
-
-// Test all script
-const testFsTimesAll = async (dirPath) => {
-  fs.readdir(dirPath, async (err, files) => {
-    if (err) {
-      console.error('Error reading directory:', err);
-      return;
-    }
-
-    for (const file of files) {
-      // Skip hidden files
-      if (file.startsWith('.')) {
-        console.log(`Skipping hidden file: ${file}`);
-        continue;
-      }
-
-      // target the .mov files
-      const ext = path.extname(file);
-      if (ext === '.mp4' || ext === '.MP4') {
-        const inputPath = path.join(dirPath, file);
-        console.log(inputPath);
-
-        try {
-          // ! Do Stuff here
-          await testDate(inputPath);
-        } catch (err) {
-          console.error(`Failed to test ${file}`, err);
-        }
-      }
-    }
-  });
-};
-
-const fatBoySlimString = '2024:05:25 06:55:07';
-
-// console.log('The Funks old brother', fatBoySlimDate);
-
-// Run the conversion process
 convertAllMovFiles(dirPath);
-// testFsTimesAll(dirPath);

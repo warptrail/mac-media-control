@@ -10,15 +10,12 @@ dayjs.extend(timezone);
 const extractCreateDate = (metaData) => {
   try {
     const createDateExifStr = metaData.CreateDate;
-    console.log('original exif CreateDate:', metaData.CreateDate);
-    // Parse the CreateDateExifStr variable using Dayjs and adjust for UTC offset
 
+    // Parse the CreateDateExifStr variable using Dayjs and adjust for UTC offset
     const createDateUTC = dayjs.utc(createDateExifStr, 'YYYY:MM:DD HH:mm:ss');
-    console.log('CreateDate (UTC):', createDateUTC.format());
 
     // Convert to JavaScript Date object
     const createDate = createDateUTC.toDate();
-    console.log('CreateDate (JavaScript Date):', createDate);
 
     return { createDateExifStr, createDate };
   } catch (err) {

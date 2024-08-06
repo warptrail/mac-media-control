@@ -10,8 +10,6 @@ const extractGPSMetadata = (metadata) => {
     GPSPosition: metadata.GPSPosition,
     GPSCoordinates: metadata.GPSCoordinates,
   };
-
-  console.table(gpsData);
   return gpsData;
 };
 

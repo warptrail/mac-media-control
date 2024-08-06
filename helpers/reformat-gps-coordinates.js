@@ -2,9 +2,10 @@ const reformatGPSCoordinates = (gpsData) => {
   // Regular expression to extract latitude, longitude, and altitude components
   const regex =
     /(\d+) deg (\d+)' ([\d.]+)" (N|S), (\d+) deg (\d+)' ([\d.]+)" (E|W), (\d+\.\d+) m Above Sea Level/;
-  console.log(gpsData);
+
   const coords = gpsData.GPSCoordinates;
-  const match = coords.match(regex);
+
+  const match = !!coords ? coords.match(regex) : null;
 
   if (match) {
     // Parse latitude components
