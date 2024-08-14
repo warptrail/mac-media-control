@@ -1,0 +1,11 @@
+I am working on a coding project using Node.js to create a script that will rename all the image and video files in a file directory to the timestamp that the photo or video was taken. This script is MacOS specific because media that is exported from the Photos App has a file naming convention like "IMG_1111". I find that the Android naming convention, for example, "20240719_123457.jpg" is more useful because the user can sort by name and it's already sorted by date and I want to be able to share media with my Android and Windows friends in a format that matches their media libraries. 
+
+This script will loop through a file directory and extract the original date-time from the exif metadata using exiftools and the exiftools node wrapper. Exiftools is already installed. The property it needs to extract is called DateTimeOriginal and the OffsetTimeOriginal for the timezone offset. If for whatever reason the script is being run on images without those Exif metadata values, it should fallback to using fs.stats() and look at the four different timestamps it pulls up from there. Sometimes, when dealing with media files from many years ago in previous MacOS versions the Modified date is older than the Create date, so the script must find the oldest date and assume that is the actual create date of the file. The script will use fs to adjust the modified and access dates to the create date, and use the MacOS specific terminal command "SetFile" to set the birthtime with child-processes and an exec method. The script will also use DayJs to handle dates and formatting dates.
+
+There will be times when files in a directory have the exact same create date down to the second, and so the script must add a suffix counter with padded zeros that applies only to files that have more than one of a unique timestamp. For example, if there's only one photo with a '20240719_123457" timestamp and two photos with "20240719_123458" timestamps the result should be:
+
+20240719_123457.jpg
+20240719_123458_01.jpg
+20240719_123458_02.jpg
+
+

@@ -1,3 +1,4 @@
+// ! THIS SCRIPT IS VERSION 1 AND NOT AS EFFICIENT AS IT COULD BE, KEEPING FOR REFERENCE
 const fs = require('fs');
 const { exec } = require('child_process');
 const path = require('path');
